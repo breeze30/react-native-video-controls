@@ -70,6 +70,7 @@ export default class VideoPlayer extends Component {
       currentTime: 0,
       error: false,
       duration: 0,
+      isEnd: false
     };
 
     /**
@@ -271,7 +272,14 @@ export default class VideoPlayer extends Component {
    * Either close the video or go to a
    * new page.
    */
-  _onEnd() {}
+  _onEnd() {
+    let state = this.state;
+    state.paused = true;
+    state.isEnd = true;
+
+    this.setState(state);
+    this.setSeekerPosition(0);
+  }
 
   /**
    * Set the error state to true which then
@@ -503,13 +511,19 @@ export default class VideoPlayer extends Component {
   /**
    * Toggle playing state on <Video> component
    */
-  _togglePlayPause() {
+  _togglePlayPause = () => {
     let state = this.state;
     state.paused = !state.paused;
 
     if (state.paused) {
       typeof this.events.onPause === 'function' && this.events.onPause();
     } else {
+      if (state.isEnd) {
+        this.player.ref.seek(0)
+
+        state.isEnd = false;
+        this.setState(state);
+      }
       typeof this.events.onPlay === 'function' && this.events.onPlay();
     }
 
